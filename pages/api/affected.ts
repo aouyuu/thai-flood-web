@@ -33,12 +33,12 @@ export const getOverview = (): OverviewResponse => {
     affectedAreas: [
       {
         id: 1,
-        name: 'กรุงเทพ',
+        name: 'Bangkok',
         affected: 50,
       },
       {
         id: 2,
-        name: 'ขอนแก่น',
+        name: 'KhonKaen',
         affected: 100,
       },
     ],
@@ -50,7 +50,7 @@ export const getDetailByProvince = (): DetailByProvinceResponse => {
     updateTimestamp: 1633371269,
     date: 1633371269,
     id: 2,
-    name: 'ขอนแก่น',
+    name: 'KhonKaen',
     district: [
       {
         id: 1,
