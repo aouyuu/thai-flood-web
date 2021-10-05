@@ -1,26 +1,32 @@
 export type OverviewResponse = {
   updateTimestamp: number;
   date: number;
-  affectedAreas: {
-    id: number;
-    name: string;
-    affected: number;
-  }[];
+  affectedAreas: AffectedArea[];
+};
+
+export type AffectedArea = {
+  id: number;
+  nameEng: string;
+  nameThai: string;
+  affected: number;
 };
 
 export type DetailByProvinceResponse = {
   updateTimestamp: number;
   date: number;
   id: number;
-  name: string;
+  nameEng: string;
+  nameThai: string;
   district: {
     id: number;
     updateTimestamp: number;
-    name: string;
+    nameEng: string;
+    nameThai: string;
     subdistrict: {
       id: number;
       updateTimestamp: number;
-      name: string;
+      nameEng: string;
+      nameThai: string;
       affected: number;
     }[];
   }[];
@@ -33,12 +39,14 @@ export const getOverview = (): OverviewResponse => {
     affectedAreas: [
       {
         id: 1,
-        name: 'กรุงเทพ',
+        nameEng: 'Bangkok',
+        nameThai: 'กรุงเทพ',
         affected: 50,
       },
       {
         id: 2,
-        name: 'ขอนแก่น',
+        nameEng: 'KhonKaen',
+        nameThai: 'ขอนแก่น',
         affected: 100,
       },
     ],
@@ -50,29 +58,34 @@ export const getDetailByProvince = (): DetailByProvinceResponse => {
     updateTimestamp: 1633371269,
     date: 1633371269,
     id: 2,
-    name: 'ขอนแก่น',
+    nameEng: 'KhonKaen',
+    nameThai: 'ขอนแก่น',
     district: [
       {
         id: 1,
         updateTimestamp: 1633371269,
-        name: 'เมืองขอนแก่น',
+        nameEng: 'Muang KhonKaen',
+        nameThai: 'เมืองขอนแก่น',
         subdistrict: [
           {
             id: 1,
             updateTimestamp: 1633371269,
-            name: 'ในเมือง',
+            nameEng: 'Nai Muang',
+            nameThai: 'ในเมือง',
             affected: 100,
           },
           {
             id: 2,
             updateTimestamp: 1633371269,
-            name: 'เมืองเก่า',
+            nameEng: 'เมืองเก่า',
+            nameThai: 'เมืองเก่า',
             affected: 50,
           },
           {
             id: 3,
             updateTimestamp: 1633371269,
-            name: 'พระยืน',
+            nameEng: 'พระยืน',
+            nameThai: 'พระยืน',
             affected: 0,
           },
         ],

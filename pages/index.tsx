@@ -1,8 +1,10 @@
 import type { GetStaticProps, InferGetStaticPropsType } from 'next';
-import Image from 'next/image';
-import { useEffect } from 'react';
-import styles from '../styles/Home.module.css';
-import { getOverview, OverviewResponse } from './api/affected';
+import { NoSsr } from '@mui/core';
+import React, { useEffect, useState } from 'react';
+import MapFragment from '../element/map';
+import { Box } from '@mui/system';
+import { AffectedArea, getOverview, OverviewResponse } from './api/affected';
+import * as d3 from 'd3';
 
 type HomeProps = {
   data?: OverviewResponse;
@@ -11,66 +13,90 @@ type HomeProps = {
 const Home = ({
   data,
 }: InferGetStaticPropsType<typeof getStaticProps>): JSX.Element => {
+  const [mapData, setMapData] =
+    useState<
+      d3.ExtendedFeatureCollection<
+        d3.ExtendedFeature<d3.GeoGeometryObjects | null, any>
+      >
+    >();
+  const [selectedProvince, setSelectedProvince] = useState<AffectedArea>();
+
   useEffect(() => {
-    console.info(data);
+    if (!data) return;
+
+    d3.json<
+      d3.ExtendedFeatureCollection<
+        d3.ExtendedFeature<d3.GeoGeometryObjects | null, any>
+      >
+    >(
+      'https://raw.githubusercontent.com/apisit/thailand.json/master/thailandwithdensity.json'
+    ).then((e) => {
+      if (!e) return;
+
+      const parsedData: Map<string, AffectedArea> = new Map();
+      for (const affectedArea of data.affectedAreas) {
+        parsedData.set(affectedArea.nameEng, affectedArea);
+      }
+
+      for (let i = 0; i < e.features.length; i++) {
+        if (parsedData.has(e.features[i].properties.name)) {
+          e.features[i].properties.detail = parsedData.get(
+            e.features[i].properties.name
+          );
+          e.features[i].properties.score =
+            e.features[i].properties.detail.affected;
+        } else {
+          e.features[i].properties.detail = {
+            id: 0,
+            nameEng: e.features[i].properties.name,
+            nameThai: 'ไม่มีข้อมูล',
+            affected: 0,
+          };
+          e.features[i].properties.score = 0;
+        }
+
+        if (e.features[i].properties.score >= 200) {
+          e.features[i].properties.color = '#44667D';
+        } else if (e.features[i].properties.score >= 150) {
+          e.features[i].properties.color = '#5986A5';
+        } else if (e.features[i].properties.score >= 100) {
+          e.features[i].properties.color = '#7BA1B8';
+        } else if (e.features[i].properties.score >= 50) {
+          e.features[i].properties.color = '#C3D7E0';
+        } else {
+          e.features[i].properties.color = '#D6E4EA';
+        }
+      }
+
+      setMapData(e);
+    });
   }, [data]);
 
   return (
-    <div className={styles.container}>
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
-    </div>
+    <>
+      <Box height="100vh">
+        <NoSsr>
+          <MapFragment
+            data={mapData}
+            setSelectedProvince={setSelectedProvince}
+          />
+        </NoSsr>
+      </Box>
+      <Box position="fixed" top={5} left="1rem" fontSize={45} fontWeight="bold">
+        {selectedProvince ? selectedProvince.nameThai : 'รายงานพื้นที่น้ำท่วม'}
+      </Box>
+      <Box
+        position="fixed"
+        top={62}
+        left="1rem"
+        fontSize={20}
+        fontWeight="light"
+      >
+        {selectedProvince
+          ? 'พื้นที่น้ำท่วมทั้งหมด 0 ไร่'
+          : 'เลือกพื้นที่ที่ต้องการข้อมูล'}
+      </Box>
+    </>
   );
 };
 
