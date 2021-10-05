@@ -1,4 +1,4 @@
-import type { GetStaticProps, InferGetStaticPropsType, NextPage } from 'next';
+import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 import { NoSsr } from '@mui/core';
 import React, { useEffect, useState } from 'react';
 import MapFragment from '../element/map';
@@ -19,6 +19,7 @@ const Home = ({
         d3.ExtendedFeature<d3.GeoGeometryObjects | null, any>
       >
     >();
+  const [selectedProvince, setSelectedProvince] = useState<string>();
 
   useEffect(() => {
     if (!data) return;
@@ -34,14 +35,10 @@ const Home = ({
 
       const parsedData: Map<string, number> = new Map();
       for (const affectedArea of data.affectedAreas) {
-        parsedData.set(affectedArea.name, affectedArea.affected);
+        parsedData.set(affectedArea.nameEng, affectedArea.affected);
       }
 
       for (let i = 0; i < e.features.length; i++) {
-        console.info(
-          e.features[i].properties.name,
-          parsedData.has(e.features[i].properties.name)
-        );
         if (parsedData.has(e.features[i].properties.name)) {
           e.features[i].properties.score = parsedData.get(
             e.features[i].properties.name
@@ -71,20 +68,25 @@ const Home = ({
     <>
       <Box height="100vh">
         <NoSsr>
-          <MapFragment data={mapData} />
+          <MapFragment
+            data={mapData}
+            setSelectedProvince={setSelectedProvince}
+          />
         </NoSsr>
       </Box>
-      <Box position="fixed" top={0} left="1rem" fontSize={45} fontWeight="bold">
-        ขอนแก่น
+      <Box position="fixed" top={5} left="1rem" fontSize={45} fontWeight="bold">
+        {selectedProvince ? selectedProvince : 'รายงานพื้นที่น้ำท่วม'}
       </Box>
       <Box
         position="fixed"
-        top={57}
+        top={62}
         left="1rem"
         fontSize={20}
         fontWeight="light"
       >
-        พื้นที่น้ำท่วมทั้งหมด 0 ไร่
+        {selectedProvince
+          ? 'พื้นที่น้ำท่วมทั้งหมด 0 ไร่'
+          : 'เลือกพื้นที่ที่ต้องการข้อมูล'}
       </Box>
     </>
   );
