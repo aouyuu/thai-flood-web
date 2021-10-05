@@ -3,7 +3,7 @@ import { NoSsr } from '@mui/core';
 import React, { useEffect, useState } from 'react';
 import MapFragment from '../element/map';
 import { Box } from '@mui/system';
-import { getOverview, OverviewResponse } from './api/affected';
+import { AffectedArea, getOverview, OverviewResponse } from './api/affected';
 import * as d3 from 'd3';
 
 type HomeProps = {
@@ -19,7 +19,7 @@ const Home = ({
         d3.ExtendedFeature<d3.GeoGeometryObjects | null, any>
       >
     >();
-  const [selectedProvince, setSelectedProvince] = useState<string>();
+  const [selectedProvince, setSelectedProvince] = useState<AffectedArea>();
 
   useEffect(() => {
     if (!data) return;
@@ -33,17 +33,25 @@ const Home = ({
     ).then((e) => {
       if (!e) return;
 
-      const parsedData: Map<string, number> = new Map();
+      const parsedData: Map<string, AffectedArea> = new Map();
       for (const affectedArea of data.affectedAreas) {
-        parsedData.set(affectedArea.nameEng, affectedArea.affected);
+        parsedData.set(affectedArea.nameEng, affectedArea);
       }
 
       for (let i = 0; i < e.features.length; i++) {
         if (parsedData.has(e.features[i].properties.name)) {
-          e.features[i].properties.score = parsedData.get(
+          e.features[i].properties.detail = parsedData.get(
             e.features[i].properties.name
           );
+          e.features[i].properties.score =
+            e.features[i].properties.detail.affected;
         } else {
+          e.features[i].properties.detail = {
+            id: 0,
+            nameEng: e.features[i].properties.name,
+            nameThai: 'ไม่มีข้อมูล',
+            affected: 0,
+          };
           e.features[i].properties.score = 0;
         }
 
@@ -75,7 +83,7 @@ const Home = ({
         </NoSsr>
       </Box>
       <Box position="fixed" top={5} left="1rem" fontSize={45} fontWeight="bold">
-        {selectedProvince ? selectedProvince : 'รายงานพื้นที่น้ำท่วม'}
+        {selectedProvince ? selectedProvince.nameThai : 'รายงานพื้นที่น้ำท่วม'}
       </Box>
       <Box
         position="fixed"

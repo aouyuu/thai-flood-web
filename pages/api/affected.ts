@@ -1,12 +1,14 @@
 export type OverviewResponse = {
   updateTimestamp: number;
   date: number;
-  affectedAreas: {
-    id: number;
-    nameEng: string;
-    nameThai: string;
-    affected: number;
-  }[];
+  affectedAreas: AffectedArea[];
+};
+
+export type AffectedArea = {
+  id: number;
+  nameEng: string;
+  nameThai: string;
+  affected: number;
 };
 
 export type DetailByProvinceResponse = {

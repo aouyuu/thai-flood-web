@@ -1,11 +1,14 @@
 import * as d3 from 'd3';
 import { useEffect, useState } from 'react';
+import { AffectedArea } from '../pages/api/affected';
 
 type MapFragmentProps = {
   data?: d3.ExtendedFeatureCollection<
     d3.ExtendedFeature<d3.GeoGeometryObjects | null, any>
   >;
-  setSelectedProvince: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setSelectedProvince: React.Dispatch<
+    React.SetStateAction<AffectedArea | undefined>
+  >;
 };
 
 const MapFragment = ({
@@ -60,16 +63,21 @@ const MapFragment = ({
           if (!g || !svgNode) return;
 
           setSelectedProvince((prevState) => {
-            let newSelected: any;
+            let newSelected: AffectedArea | undefined;
 
             let x, y, k;
 
-            if (d && prevState !== d.properties.name) {
+            if (
+              !prevState ||
+              (d &&
+                d.properties.detail &&
+                prevState.nameEng !== d.properties.detail.nameEng)
+            ) {
               const centroid = path.centroid(d);
               x = centroid[0];
               y = centroid[1];
               k = 4;
-              newSelected = d.properties.name;
+              newSelected = d.properties.detail;
             } else {
               x = width / 2;
               y = height / 2;
